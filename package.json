@@ -1,0 +1,12 @@
+{
+  "name": "pharos",
+  "version": "0.1.0",
+  "description": "AI-readable site bundle generator",
+  "license": "ISC",
+  "author": "George Bakoulis",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
