@@ -25,5 +25,15 @@ export function filterUrlAndModDate(rawData) {
   return filteredUrlAndDate
 }
 
-const rawData = await getSiteData("https://georgebakoulis.dev/sitemap.xml");
-console.log(filterUrlAndModDate(rawData));
+export async function getHTMLContentFromUrl(rawData) {
+  const entries = filterUrlAndModDate(rawData)
+  let htmlEnriched = []
+  for (const entry of entries) {
+    const html = await getSiteData(entry.url)
+    htmlEnriched.push({ ...entry, html })
+  }
+
+  return htmlEnriched
+}
+
+
