@@ -27,13 +27,13 @@ export function filterUrlAndModDate(rawData) {
 
 export async function getHTMLContentFromUrl(rawData) {
   const entries = filterUrlAndModDate(rawData)
-  let htmlEnriched = []
-  for (const entry of entries) {
+  const promises = entries.map(async (entry) => {
     const html = await getSiteData(entry.url)
-    htmlEnriched.push({ ...entry, html })
-  }
 
-  return htmlEnriched
+    return { ...entry, html }
+  })
+
+  return await Promise.all(promises)
 }
 
 
