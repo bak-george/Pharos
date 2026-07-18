@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+                <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-NLZKLGYC3T"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-NLZKLGYC3T');
+        </script>
+                <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Laravel&#039;s $with property on Eloquent models can quietly turn 1 query into 5. Here&#039;s how cascading eager loading sneaks up on you and what to do instead.">
+        <meta name="keywords" content="laravel $with property, eloquent eager loading, laravel n+1 queries, laravel query optimization, eloquent $with vs with(), laravel model performance, cascading eager loading laravel">
+        <meta name="robots" content="index, follow">
+        <title> What $with Does to Your Queries in Laravel </title>
+        <link rel="canonical" href="https://georgebakoulis.dev/articles/what-with-does-to-your-queries-in-laravel">
+        <link rel="icon" type="image/jpeg" href="https://fls-a1a47ebe-1783-44f3-972a-dd3993cf6464.laravel.cloud/georgebakoulis.jpeg">
+        <meta property="og:title" content="What $with Does to Your Queries in Laravel">
+        <meta property="og:description" content="Laravel&#039;s $with property on Eloquent models can quietly turn 1 query into 5. Here&#039;s how cascading eager loading sneaks up on you and what to do instead.">
+        <meta property="og:type" content="article">
+        <meta property="og:url" content="https://georgebakoulis.dev/articles/what-with-does-to-your-queries-in-laravel">
+        <meta property="og:image" content="">
+                <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link rel="preload" as="style" href="https://georgebakoulis.dev/build/assets/app-6RXOQ9cK.css" /><link rel="modulepreload" href="https://georgebakoulis.dev/build/assets/app-BhsRrlNh.js" /><link rel="stylesheet" href="https://georgebakoulis.dev/build/assets/app-6RXOQ9cK.css" /><script type="module" src="https://georgebakoulis.dev/build/assets/app-BhsRrlNh.js"></script>        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>    </head>
+    <body class="bg-rich-black">
+        
+        <canvas id="void-canvas" class="fixed inset-0 pointer-events-none"></canvas>
+
+        
+        <div class="fixed inset-0 flex justify-center sm:px-8">
+            <div class="flex w-full max-w-7xl lg:px-8">
+                <div class="w-full bg-black-container-background ring-1 ring-cade-gray/20 shadow-[0_0_80px_rgba(139,148,158,0.06)]"></div>
+            </div>
+        </div>
+
+        <div class="relative flex w-full flex-col">
+            <header class="mt-2">
+                <div class="mx-auto w-full max-w-7xl lg:px-8">
+    <div class="relative px-4 sm:px-8 lg:px-12">
+        <div class="mx-auto max-w-2xl lg:max-w-5xl">
+            <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                        <a href="/" class="block group">
+                            <img
+                                src="https://fls-a1a47ebe-1783-44f3-972a-dd3993cf6464.laravel.cloud/georgebakoulis.jpeg"
+                                alt="George Bakoulis Avatar"
+                                class="h-10 w-10 rounded-full object-cover ring-2 ring-crema-white hover:ring-azure cursor-pointer transition-all duration-200"
+                            />
+                        </a>
+                    </div>
+                                <div class="flex-1 hidden sm:flex justify-center">
+                    <nav class="isolate flex divide-x divide-gray-200 rounded-lg shadow-sm" aria-label="Tabs">
+                        <a href="/about" class="group relative min-w-0 flex-1 overflow-hidden flex items-center justify-center
+                     rounded-bl-lg sm:rounded-l-lg
+                     
+                     bg-crema-white px-6 py-3
+                     text-sm font-medium text-gray-600
+                     hover:bg-gray-50 hover:text-gray-700 focus:z-10"
+        >
+    <span>About</span>
+    <span aria-hidden="true"
+         class="absolute inset-x-0 bottom-0 h-1
+              bg-transparent"></span>
+</a>
+                        <a href="/blog" class="group relative min-w-0 flex-1 overflow-hidden flex items-center justify-center
+                     
+                     rounded-br-lg sm:rounded-r-lg
+                     bg-crema-white px-6 py-3
+                     text-sm font-medium text-gray-600
+                     hover:bg-gray-50 hover:text-gray-700 focus:z-10"
+        >
+    <span>Blog</span>
+    <span aria-hidden="true"
+         class="absolute inset-x-0 bottom-0 h-1
+              bg-transparent"></span>
+</a>
+                    </nav>
+                </div>
+                                    <div class="w-10 hidden sm:block"></div>
+                                <div class="flex-1 flex items-center justify-between sm:hidden">
+                    <div class="flex-1 text-center">
+                        <span class="text-crema-white font-medium">georgebakoulis.dev</span>
+                    </div>
+                    <button 
+                        id="mobile-menu-button"
+                        type="button" 
+                        class="inline-flex items-center justify-center p-2 rounded-md text-crema-white hover:text-azure focus:outline-none"
+                        aria-expanded="false"
+                    >
+                        <span class="sr-only">Open main menu</span>
+                        <svg id="hamburger-icon" class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg id="close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="mobile-menu" class="fixed inset-0 z-50 bg-rich-black transform translate-x-full transition-transform duration-300 ease-in-out sm:hidden">
+    <div class="flex items-center justify-end px-4 py-6">
+        <button 
+            id="mobile-menu-close"
+            type="button" 
+            class="inline-flex items-center justify-center p-2 rounded-md text-crema-white hover:text-azure focus:outline-none"
+        >
+            <span class="sr-only">Close menu</span>
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    <nav class="px-4 py-8">
+        <a href="/about" class="block px-3 py-4 text-2xl font-medium text-crema-white hover:text-azure transition-colors ">About</a>
+        <a href="/blog" class="block px-3 py-4 text-2xl font-medium text-crema-white hover:text-azure transition-colors ">Blog</a>
+    </nav>
+</div>
+            </header>
+            <main>
+                                <div class="mx-auto w-full max-w-7xl lg:px-8">
+                    <div class="relative px-4 sm:px-8 lg:px-12">
+                        <div class="mx-auto max-w-2xl lg:max-w-5xl">
+                            <script type="application/ld+json">{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "What $with Does to Your Queries in Laravel",
+    "description": "Laravel's $with property on Eloquent models can quietly turn 1 query into 5. Here's how cascading eager loading sneaks up on you and what to do instead.",
+    "author": {
+        "@type": "Person",
+        "name": "George Bakoulis",
+        "url": "https://georgebakoulis.dev/about"
+    },
+    "publisher": {
+        "@type": "Person",
+        "name": "George Bakoulis",
+        "url": "https://georgebakoulis.dev"
+    },
+    "url": "https://georgebakoulis.dev/blog/what-with-does-to-your-queries-in-laravel",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://georgebakoulis.dev/blog/what-with-does-to-your-queries-in-laravel"
+    },
+    "datePublished": "2026-03-26T00:00:00+00:00",
+    "dateModified": "2026-03-26T00:00:00+00:00",
+    "keywords": [
+        "laravel",
+        "eloquent",
+        "performance",
+        "database-queries",
+        "eager-loading"
+    ]
+}</script>
+    <div class="mt-16 lg:mt-32">
+        <div class="xl:relative">
+            <div class="mx-auto max-w-2xl">
+                <a href="https://georgebakoulis.dev/blog"
+                   class="group mb-8 flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-black-container-background shadow-md shadow-zinc-800/5 transition hover:border-gray-500 lg:absolute lg:-left-5 lg:-mt-2 lg:mb-0 xl:-top-1.5 xl:left-0 xl:mt-0">
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="h-4 w-4 stroke-cade-gray transition group-hover:stroke-crema-white">
+                        <path d="M7.25 11.25 3.75 8m0 0 3.5-3.25M3.75 8h8.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
+
+                <article>
+                    <header class="flex flex-col">
+                        <h1 class="mt-6 text-4xl font-bold tracking-tight text-crema-white sm:text-5xl">
+                            What $with Does to Your Queries in Laravel
+                        </h1>
+                                                <time datetime="2026-03-26T00:00:00+00:00"
+                              class="order-first flex items-center text-base text-cade-gray">
+                            <span class="h-4 w-0.5 rounded-full bg-cade-gray"></span>
+                            <span class="ml-3">March 26, 2026</span>
+                        </time>
+                                            </header>
+
+                    
+                    <div class="mt-8 article-content">
+                        <p>If you use <code>$with</code> on your Eloquent models, you might be running more queries than you think.</p>
+<p>I stumbled upon <code>protected $with = ['modelA', 'modelB']</code> a few months back in an application that was experiencing slow page loads. I set up a dummy blog in my local Laravel Lab (laralab.test) to experiment with it. What I found was that <code>$with</code> cascades, and one query can quietly become five.</p>
+<p>Here's the setup. We have two simple emtpy models, &quot;Author&quot; and &quot;Category&quot;, and the rest are:</p>
+<pre><code class="language-php">class Comment extends Model
+{
+    use HasFactory;
+
+    protected $with = ['post', 'author'];
+
+    public function post(): BelongsTo
+    {
+        return $this-&gt;belongsTo(Post::class);
+    }
+
+    public function author(): BelongsTo
+    {
+        return $this-&gt;belongsTo(Author::class);
+    }
+}
+
+class Post extends Model
+{
+    use HasFactory;
+
+    protected $with = ['author', 'category'];
+
+    public function author(): BelongsTo
+    {
+        return $this-&gt;belongsTo(Author::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this-&gt;belongsTo(Category::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this-&gt;hasMany(Comment::class);
+    }
+}
+</code></pre>
+<p>And Laravel's default User model.</p>
+<p>Notice the <code>$with</code> property on both Comment and Post. That's where things get interesting.</p>
+<h3>Without <code>$with</code>: 1 query</h3>
+<p>I commented out <code>protected $with = ['post', 'author']</code> in the Comment model and requested the 10 latest comments:</p>
+<pre><code class="language-php">Route::get('/test-with-cascade', function () {
+    DB::enableQueryLog();
+
+    Comment::latest()-&gt;limit(10)-&gt;get();
+
+    dump(DB::getQueryLog());
+});
+</code></pre>
+<p>Result:</p>
+<pre><code class="language-sql">select * from &quot;comments&quot; order by &quot;created_at&quot; desc limit 10
+</code></pre>
+<p>One query. Clean.</p>
+<h3>With <code>$with</code>: 5 queries</h3>
+<p>I uncommented the <code>$with</code> property and ran the same route. Instead of 1 query, there were now 5:</p>
+<pre><code class="language-sql">select * from &quot;comments&quot; order by &quot;created_at&quot; desc limit 10
+select * from &quot;posts&quot; where &quot;posts&quot;.&quot;id&quot; in (5, 6, 8, 10, 11, 13, 15, 17, 19)
+select * from &quot;authors&quot; where &quot;authors&quot;.&quot;id&quot; in (1, 2, 3, 4)
+select * from &quot;categories&quot; where &quot;categories&quot;.&quot;id&quot; in (1, 2, 3, 4)
+select * from &quot;authors&quot; where &quot;authors&quot;.&quot;id&quot; in (1, 2, 3, 4, 5)
+</code></pre>
+<p><strong>1 query became 5.</strong> Same route, same data, same code, the only difference is that <code>$with</code> property.</p>
+<h3>The cascade: <code>$with</code> triggers <code>$with</code></h3>
+<p>What happened is that I told Laravel: every time you load a Comment, also load its Post and Author. But the Post model also has <code>$with = ['author', 'category']</code>. So loading those posts triggers the same process again:</p>
+<ul>
+<li>Load Post's author:
+<code>select * from &quot;authors&quot; where &quot;authors&quot;.&quot;id&quot; in (1, 2, 3, 4)</code></li>
+<li>Load Post's category:
+<code>select * from &quot;categories&quot; where &quot;categories&quot;.&quot;id&quot; in (1, 2, 3, 4)</code></li>
+</ul>
+<p>The <code>$with</code> property cascades through your model relationships. Every model it touches checks for its own <code>$with</code> and fires more queries.</p>
+<p>I still don't have a good use case for <code>$with</code> on the model. Until I find one, I'm keeping it empty and loading relationships explicitly with <code>-&gt;with()</code> on the query where I actually need them.</p>
+
+                    </div>
+                </article>
+
+                <div class="mt-16 pt-8 border-t border-gray-700/40">
+                    <nav class="flex items-center justify-center space-x-4">
+                                                <a href="https://georgebakoulis.dev/blog/a-weekend-differs-now"
+                           class="group flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-black-container-background shadow-md shadow-zinc-800/5 transition hover:border-gray-500"
+                           title="Previous: A Weekend Differs Now">
+                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="h-4 w-4 stroke-cade-gray transition group-hover:stroke-crema-white">
+                                <path d="M7.25 11.25 3.75 8m0 0 3.5-3.25M3.75 8h8.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                        
+                                                <a href="https://georgebakoulis.dev/blog/doubt-is-about-pace-not-path"
+                           class="group flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-black-container-background shadow-md shadow-zinc-800/5 transition hover:border-gray-500"
+                           title="Random article">
+                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="h-4 w-4 stroke-cade-gray transition group-hover:stroke-crema-white">
+                                <path d="M3 3v3.5h.4m9.2 1A5.5 5.5 0 0 0 3.4 6.5m0 0H6m7 10v-3.5h-.4m-9.2-1A5.5 5.5 0 0 0 12.6 9.5m0 0H10" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                        
+                                                <a href="https://georgebakoulis.dev/blog/doubt-is-about-pace-not-path"
+                           class="group flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-black-container-background shadow-md shadow-zinc-800/5 transition hover:border-gray-500"
+                           title="Next: Doubt Is About Pace, Not Path">
+                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="h-4 w-4 stroke-cade-gray transition group-hover:stroke-crema-white">
+                                <path d="M8.75 4.75 12.25 8m0 0-3.5 3.25M12.25 8h-8.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                                            </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+                        </div>
+                    </div>
+                </div>
+                            </main>
+            <footer class="mt-20">
+                <div class="mx-auto w-full max-w-7xl lg:px-8">
+    <div class="border-t border-zinc-700/40 pt-5 pb-16">
+        <div class="relative px-4 sm:px-8 lg:px-12">
+            <div class="mx-auto max-w-2xl lg:max-w-5xl">
+                <div class="flex flex-col align-center justify-center gap-6 md:flex-row">
+                    <p class="sm:text-sm text-xs text-crema-white flex justify-center align-center">
+                        <span class="text-[2rem]">&copy; </span> 2026 George Bakoulis. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+            </footer>
+        </div>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1d1fe379b56df5e',t:'MTc4NDM4MzAyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1d1fe379b56df5e',t:'MTc4NDM4MzAyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
