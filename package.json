@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "node-html-parser": "^9.0.0"
   }
 }
