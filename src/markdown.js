@@ -23,7 +23,11 @@ function nodeToMarkdown(node) {
       content += nodeToMarkdown(child)
     }
 
-    return content
+    switch (node.rawTagName) {
+      case "p": return content + "\n\n"
+      case "h1": return `# ${content}\n\n`
+      default: return content
+    }
   }
 
   return ""
