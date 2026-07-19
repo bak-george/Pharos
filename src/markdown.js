@@ -1,5 +1,10 @@
 import { parse } from "node-html-parser"
 
+const NodeType = Object.freeze({
+  ELEMENT: 1,
+  TEXT: 3
+})
+
 export function htmlToMarkdown(html) {
   const root = parse(html)
 
@@ -7,11 +12,11 @@ export function htmlToMarkdown(html) {
 }
 
 function nodeToMarkdown(node) {
-  if (node.nodeType === 3) {
+  if (node.nodeType === NodeType.TEXT) {
     return node.text
   }
 
-  if (node.nodeType === 1) {
+  if (node.nodeType === NodeType.ELEMENT) {
     let content = ""
 
     for (const child of node.childNodes) {
